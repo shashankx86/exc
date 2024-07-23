@@ -7,11 +7,6 @@
                 {
                     "type": "print",
                     "message": "Hello, World!"
-                },
-                {
-                    "type": "set_variable",
-                    "variable_name": "greeting",
-                    "value": "Hello, World!"
                 }
             ]
         },
