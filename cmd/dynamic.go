@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-	
+    "fmt"
+
     "github.com/sirupsen/logrus"
     "github.com/spf13/cobra"
     "exc/config"

@@ -11,7 +11,7 @@ BUILD_TYPE ?= DEV
 ifeq ($(BUILD_TYPE), DEV)
     GO_BUILD_FLAGS=-ldflags "-X main.dev=1"
 else
-    GO_BUILD_FLAGS=
+    GO_BUILD_FLAGS=-ldflags "-X main.dev=0"
 endif
 
 all: $(BINARY_NAME)

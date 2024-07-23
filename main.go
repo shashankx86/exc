@@ -12,15 +12,29 @@ import (
 
 // dev flag will be set at compile time
 var dev string
+var verbose bool
 
 func main() {
-    // Set up logging
-    if dev == "1" {
-        logrus.SetLevel(logrus.DebugLevel)
-        logrus.Debug("Running in DEV mode")
-    } else {
-        logrus.SetLevel(logrus.InfoLevel)
+    // Create the root command
+    rootCmd := &cobra.Command{
+        Use:   "exc",
+        Short: "A dynamically generated CLI tool using user config",
+        PersistentPreRun: func(cmd *cobra.Command, args []string) {
+            // Set up logging
+            if dev == "1" {
+                logrus.SetLevel(logrus.DebugLevel)
+                logrus.Debug("Running in DEV mode")
+            } else if verbose {
+                logrus.SetLevel(logrus.DebugLevel)
+                logrus.Debug("Verbose logging enabled")
+            } else {
+                logrus.SetLevel(logrus.InfoLevel)
+            }
+        },
     }
+
+    // Add the --verbose flag
+    rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose output")
 
     // Determine the config path based on the dev flag
     var configPath string
@@ -49,12 +63,6 @@ func main() {
     config, err := utility.LoadConfig(configPath)
     if err != nil {
         logrus.Fatalf("Failed to load configuration: %v", err)
-    }
-
-    // Create the root command
-    rootCmd := &cobra.Command{
-        Use:   "exc",
-        Short: "A dynamically generated CLI tool using user config",
     }
 
     // Generate commands dynamically
