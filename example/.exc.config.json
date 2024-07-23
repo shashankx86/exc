@@ -1,0 +1,18 @@
+{
+    "commands": [
+        {
+            "id": "greet",
+            "description": "Prints a greeting message",
+            "actions": {
+                "message": "Hello, World!"
+            }
+        },
+        {
+            "id": "farewell",
+            "description": "Prints a farewell message",
+            "actions": {
+                "message": "Goodbye, World!"
+            }
+        }
+    ]
+}
