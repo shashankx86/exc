@@ -1,37 +1,54 @@
 package main
 
 import (
-    "log"
     "os"
     "path/filepath"
 
+    "github.com/sirupsen/logrus"
     "github.com/spf13/cobra"
     "exc/cmd"
     "exc/internal/utility"
 )
 
-// debug flag will be set at compile time
+// dev flag will be set at compile time
 var dev string
 
 func main() {
-    // Determine the config path based on the debug flag
+    // Set up logging
+    if dev == "1" {
+        logrus.SetLevel(logrus.DebugLevel)
+        logrus.Debug("Running in DEV mode")
+    } else {
+        logrus.SetLevel(logrus.InfoLevel)
+    }
+
+    // Determine the config path based on the dev flag
     var configPath string
     if dev == "1" {
-        // Dev mode: use local config path
+        // Dev mode: check local config path first, then home directory
         configPath = "example/.exc.config.json"
+        if _, err := os.Stat(configPath); os.IsNotExist(err) {
+            homeDir, err := os.UserHomeDir()
+            if err != nil {
+                logrus.Fatalf("Failed to get home directory: %v", err)
+            }
+            configPath = filepath.Join(homeDir, ".exc.config.json")
+        }
     } else {
         // Release mode: use home directory config path
         homeDir, err := os.UserHomeDir()
         if err != nil {
-            log.Fatalf("Failed to get home directory: %v", err)
+            logrus.Fatalf("Failed to get home directory: %v", err)
         }
         configPath = filepath.Join(homeDir, ".exc.config.json")
     }
 
+    logrus.Debugf("Using config path: %s", configPath)
+
     // Load configuration
     config, err := utility.LoadConfig(configPath)
     if err != nil {
-        log.Fatalf("Failed to load configuration: %v", err)
+        logrus.Fatalf("Failed to load configuration: %v", err)
     }
 
     // Create the root command
@@ -48,6 +65,6 @@ func main() {
 
     // Execute the root command
     if err := rootCmd.Execute(); err != nil {
-        log.Fatalf("Error executing command: %v", err)
+        logrus.Fatalf("Error executing command: %v", err)
     }
 }
