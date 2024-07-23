@@ -1,18 +1,14 @@
 {
     "commands": [
         {
-            "id": "greet",
-            "description": "Prints a greeting message",
-            "actions": {
-                "message": "Hello, World!"
-            }
-        },
-        {
-            "id": "farewell",
-            "description": "Prints a farewell message",
-            "actions": {
-                "message": "Goodbye, World!"
-            }
+            "id": "hello",
+            "description": "Print a hello message",
+            "actions": [
+                {
+                    "type": "print",
+                    "message": "Hello, World!"
+                }
+            ]
         }
     ]
 }

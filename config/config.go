@@ -2,14 +2,19 @@ package config
 
 const CliVersion = "0.0.1"
 
-// CommandConfig represents the structure of the JSON configuration
+// CommandConfig represents the overall configuration for commands
 type CommandConfig struct {
-    Commands []Command `json:"commands"`
+	Commands []Command `json:"commands"`
 }
 
-// Command represents a single command configuration
+// Command represents a single command in the configuration
 type Command struct {
-    ID          string            `json:"id"`
-    Description string            `json:"description"`
-    Actions     map[string]string `json:"actions"`
+	ID          string   `json:"id"`
+	Description string   `json:"description"`
+	Actions     []Action `json:"actions"`
+}
+
+type Action struct {
+	Type    string `json:"type"`
+	Message string `json:"message,omitempty"`
 }
