@@ -15,9 +15,12 @@ var dev string
 var verbose bool
 
 func main() {
+    // Get the tool's name
+    cliName := filepath.Base(os.Args[0])
+
     // Create the root command
     rootCmd := &cobra.Command{
-        Use:   "exc",
+        Use:   cliName,
         Short: "A dynamically generated CLI tool using user config",
         PersistentPreRun: func(cmd *cobra.Command, args []string) {
             // Set up logging
