@@ -1,6 +1,7 @@
 package main
 
 import (
+    "encoding/json"
     "os"
     "path/filepath"
 
@@ -15,29 +16,30 @@ var dev string
 var verbose bool
 
 func main() {
-    // Get the tool's name
+    // Get the CLI tool's name
     cliName := filepath.Base(os.Args[0])
 
     // Create the root command
     rootCmd := &cobra.Command{
         Use:   cliName,
         Short: "A dynamically generated CLI tool using user config",
-        PersistentPreRun: func(cmd *cobra.Command, args []string) {
-            // Set up logging
-            if dev == "1" {
-                logrus.SetLevel(logrus.DebugLevel)
-                logrus.Debug("Running in DEV mode")
-            } else if verbose {
-                logrus.SetLevel(logrus.DebugLevel)
-                logrus.Debug("Verbose logging enabled")
-            } else {
-                logrus.SetLevel(logrus.InfoLevel)
-            }
-        },
     }
 
     // Add the --verbose flag
     rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose output")
+
+    // Set up logging in a PersistentPreRun function
+    rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
+        if dev == "1" {
+            logrus.SetLevel(logrus.DebugLevel)
+            logrus.Debug("Running in DEV mode")
+        } else if verbose {
+            logrus.SetLevel(logrus.DebugLevel)
+            logrus.Debug("Verbose logging enabled")
+        } else {
+            logrus.SetLevel(logrus.InfoLevel)
+        }
+    }
 
     // Determine the config path based on the dev flag
     var configPath string
@@ -50,6 +52,14 @@ func main() {
                 logrus.Fatalf("Failed to get home directory: %v", err)
             }
             configPath = filepath.Join(homeDir, ".exc.config.json")
+
+			// Log configuration details
+			config, err := utility.LoadConfig(configPath)
+			configJSON, err := json.MarshalIndent(config, "", "  ")
+			if err != nil {
+				logrus.Fatalf("Failed to marshal configuration: %v", err)
+			}
+			logrus.Debugf("Configuration loaded: %s", configJSON)
         }
     } else {
         // Release mode: use home directory config path
