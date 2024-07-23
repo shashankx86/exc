@@ -2,11 +2,31 @@
     "commands": [
         {
             "id": "hello",
-            "description": "Print a hello message",
+            "description": "Print a hello message and set a variable",
             "actions": [
                 {
                     "type": "print",
                     "message": "Hello, World!"
+                },
+                {
+                    "type": "set_variable",
+                    "variable_name": "greeting",
+                    "value": "Hello, World!"
+                }
+            ]
+        },
+        {
+            "id": "show_greeting",
+            "description": "Show the greeting message",
+            "actions": [ 
+                {
+                    "type": "set_variable",
+                    "variable_name": "greeting",
+                    "value": "Hello, World!"
+                },
+                {
+                    "type": "print",
+                    "message": "Greeting is: {{.greeting}}"
                 }
             ]
         }

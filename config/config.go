@@ -15,6 +15,8 @@ type Command struct {
 }
 
 type Action struct {
-	Type    string `json:"type"`
-	Message string `json:"message,omitempty"`
+	Type         string `json:"type"`
+	Message      string `json:"message,omitempty"`
+	VariableName string `json:"variable_name,omitempty"`
+	Value        string `json:"value,omitempty"`
 }
