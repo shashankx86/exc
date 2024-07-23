@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
+	"text/template"
 
 	"exc/config"
 
@@ -49,7 +51,18 @@ func executeActions(actions []config.Action) {
 // handlePrintAction handles the print action type
 func handlePrintAction(action config.Action) {
 	if action.Message != "" {
-		fmt.Println(action.Message)
+		tmpl, err := template.New("message").Parse(action.Message)
+		if err != nil {
+			logrus.Errorf("Error parsing template: %v", err)
+			return
+		}
+		var buf bytes.Buffer
+		err = tmpl.Execute(&buf, VariableStore)
+		if err != nil {
+			logrus.Errorf("Error executing template: %v", err)
+			return
+		}
+		fmt.Println(buf.String())
 	} else {
 		logrus.Warn("Print action has no message to display")
 	}
