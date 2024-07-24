@@ -7,21 +7,28 @@
                 {
                     "type": "print",
                     "message": "Hello, World!"
+                },
+                {
+                    "type": "set_variable",
+                    "variable_name": "greeting",
+                    "value": "Hello, World!"
                 }
             ]
         },
         {
             "id": "show_greeting",
             "description": "Show the greeting message",
-            "actions": [ 
+            "actions": [
                 {
                     "type": "set_variable",
                     "variable_name": "greeting",
-                    "value": "Hello, World!"
+                    "value": "Hello, World!",
+                    "onError": "log"
                 },
                 {
                     "type": "print",
-                    "message": "Greeting is: {{.greeting}}"
+                    "message": "Greeting is: {{.greeting}}",
+                    "onError": "stop"
                 }
             ]
         }

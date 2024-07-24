@@ -19,4 +19,5 @@ type Action struct {
 	Message      string `json:"message,omitempty"`
 	VariableName string `json:"variable_name,omitempty"`
 	Value        string `json:"value,omitempty"`
+	OnError      string `json:"onError,omitempty"`
 }
