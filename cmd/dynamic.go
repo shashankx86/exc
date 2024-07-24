@@ -16,7 +16,7 @@ func GenerateDynamicCommands(rootCmd *cobra.Command, config *config.CommandConfi
 }
 
 func createCommand(cmdConfig config.Command) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   cmdConfig.ID,
 		Short: cmdConfig.Description,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -31,4 +31,11 @@ func createCommand(cmdConfig config.Command) *cobra.Command {
 			}
 		},
 	}
+
+	for _, subCmdConfig := range cmdConfig.Subcommands {
+		subCmd := createCommand(subCmdConfig)
+		cmd.AddCommand(subCmd)
+	}
+
+	return cmd
 }

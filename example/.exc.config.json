@@ -25,6 +25,50 @@
                     "message": "Environment variable value: {{.Env.XDG_SESSION_ID}}"
                 }
             ]
+        },
+        {
+            "id": "parent",
+            "description": "Parent command",
+            "actions": [
+                {
+                    "type": "print",
+                    "message": "This is the parent command"
+                }
+            ],
+            "subcommands": [
+                {
+                    "id": "child1",
+                    "description": "Child command 1",
+                    "actions": [
+                        {
+                            "type": "print",
+                            "message": "This is the first child command"
+                        }
+                    ]
+                },
+                {
+                    "id": "child2",
+                    "description": "Child command 2",
+                    "actions": [
+                        {
+                            "type": "print",
+                            "message": "This is the second child command"
+                        }
+                    ],
+                    "subcommands": [
+                        {
+                            "id": "grandchild",
+                            "description": "Grandchild command",
+                            "actions": [
+                                {
+                                    "type": "print",
+                                    "message": "This is the grandchild command"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
         
     ]

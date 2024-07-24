@@ -2,19 +2,17 @@ package config
 
 const CliVersion = "0.0.1"
 
-// CommandConfig represents the overall configuration for commands
 type CommandConfig struct {
 	Commands []Command `json:"commands"`
 }
 
-// Command represents a single command in the configuration
 type Command struct {
-	ID          string   `json:"id"`
-	Description string   `json:"description"`
-	Actions     []Action `json:"actions"`
+	ID          string    `json:"id"`
+	Description string    `json:"description"`
+	Actions     []Action  `json:"actions"`
+	Subcommands []Command `json:"subcommands,omitempty"`
 }
 
-// Action represents a single action within a command
 type Action struct {
 	Type         string            `json:"type"`
 	Message      string            `json:"message,omitempty"`
@@ -24,11 +22,18 @@ type Action struct {
 	Method       string            `json:"method,omitempty"`
 	Headers      map[string]string `json:"headers,omitempty"`
 	Body         string            `json:"body,omitempty"`
-	ResponseVar  string            `json:"response_var,omitempty"`
 	Condition    string            `json:"condition,omitempty"`
 	TrueActions  []Action          `json:"trueActions,omitempty"`
 	FalseActions []Action          `json:"falseActions,omitempty"`
 	OnError      string            `json:"onError,omitempty"`
-	LoopCount    int               `json:"loop_count,omitempty"`
-	LoopActions  []Action          `json:"loop_actions,omitempty"`
+	Retry        Retry             `json:"retry,omitempty"`
+	Timeout      int               `json:"timeout,omitempty"`
+	LoopCount    int               `json:"loopCount,omitempty"`
+	LoopActions  []Action          `json:"loopActions,omitempty"`
+	ResponseVar  string            `json:"responseVar,omitempty"`
+}
+
+type Retry struct {
+	Count    int `json:"count"`
+	Interval int `json:"interval"`
 }

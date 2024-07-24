@@ -105,6 +105,12 @@ const Schema = `
                             },
                             "required": ["type"]
                         }
+                    },
+                    "subcommands": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/properties/commands/items"
+                        }
                     }
                 },
                 "required": ["id", "description", "actions"]
