@@ -1,0 +1,53 @@
+{
+    "commands": [
+        {
+            "id": "hello",
+            "description": "Print a hello message and set a variable",
+            "actions": [
+                {
+                    "type": "print",
+                    "message": "Hello, World!"
+                },
+                {
+                    "type": "set_variable",
+                    "variable_name": "greeting",
+                    "value": "Hello, World!"
+                }
+            ]
+        },
+        {
+            "id": "show_greeting",
+            "description": "Show the greeting message",
+            "actions": [
+                {
+                    "type": "set_variable",
+                    "variable_name": "greeting",
+                    "value": "Hello, World!",
+                    "onError": "log"
+                },
+                {
+                    "type": "print",
+                    "message": "Greeting is: {{.greeting}}",
+                    "onError": "stop"
+                }
+            ]
+        },
+        {
+            "id": "http_request",
+            "description": "Make an HTTP GET request and store the response",
+            "actions": [
+                {
+                    "type": "make_http_request",
+                    "url": "https://hackhour.hackclub.com/ping",
+                    "method": "GET",
+                    "response_var": "httpResponse",
+                    "onError": "log"
+                },
+                {
+                    "type": "print",
+                    "message": "HTTP Response: {{.httpResponse}}"
+                }
+            ]
+        }
+    ]
+}

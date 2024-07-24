@@ -14,6 +14,7 @@ type Command struct {
 	Actions     []Action `json:"actions"`
 }
 
+// Action represents a single action within a command
 type Action struct {
 	Type         string            `json:"type"`
 	Message      string            `json:"message,omitempty"`
@@ -24,5 +25,8 @@ type Action struct {
 	Headers      map[string]string `json:"headers,omitempty"`
 	Body         string            `json:"body,omitempty"`
 	ResponseVar  string            `json:"response_var,omitempty"`
+	Condition    string            `json:"condition,omitempty"`
+	TrueActions  []Action          `json:"trueActions,omitempty"`
+	FalseActions []Action          `json:"falseActions,omitempty"`
 	OnError      string            `json:"onError,omitempty"`
 }
