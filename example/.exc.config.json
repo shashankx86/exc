@@ -31,6 +31,18 @@
                     "onError": "stop"
                 }
             ]
+        },
+        {
+            "id": "http_request",
+            "description": "Make an HTTP GET request",
+            "actions": [
+                {
+                    "type": "make_http_request",
+                    "url": "https://hackhour.hackclub.com/ping",
+                    "method": "GET",
+                    "onError": "log"
+                }
+            ]
         }
     ]
 }

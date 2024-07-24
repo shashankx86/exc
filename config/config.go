@@ -15,9 +15,13 @@ type Command struct {
 }
 
 type Action struct {
-	Type         string `json:"type"`
-	Message      string `json:"message,omitempty"`
-	VariableName string `json:"variable_name,omitempty"`
-	Value        string `json:"value,omitempty"`
-	OnError      string `json:"onError,omitempty"`
+	Type         string            `json:"type"`
+	Message      string            `json:"message,omitempty"`
+	VariableName string            `json:"variable_name,omitempty"`
+	Value        string            `json:"value,omitempty"`
+	URL          string            `json:"url,omitempty"`
+	Method       string            `json:"method,omitempty"`
+	Headers      map[string]string `json:"headers,omitempty"`
+	Body         string            `json:"body,omitempty"`
+	OnError      string            `json:"onError,omitempty"`
 }
