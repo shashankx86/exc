@@ -15,6 +15,17 @@
                     ]
                 }
             ]
+        },
+        {
+            "id": "print_env",
+            "description": "Print an environment variable",
+            "actions": [
+                {
+                    "type": "print",
+                    "message": "Environment variable value: {{.Env.XDG_SESSION_ID}}"
+                }
+            ]
         }
+        
     ]
 }

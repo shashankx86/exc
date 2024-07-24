@@ -1,195 +1,215 @@
 package cmd
 
 import (
-	"bytes"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"strings"
+    "bytes"
+    "fmt"
+    "io/ioutil"
+    "net/http"
+    "os"
+    "strings"
 
-	"exc/config"
-
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
+    "github.com/sirupsen/logrus"
+    "github.com/spf13/cobra"
+    "exc/config"
 )
 
 // GenerateDynamicCommands generates commands based on the configuration
 func GenerateDynamicCommands(rootCmd *cobra.Command, config *config.CommandConfig) {
-	for _, cmdConfig := range config.Commands {
-		logrus.Debugf("Generating command: %s", cmdConfig.ID)
-		cmd := createCommand(cmdConfig)
-		rootCmd.AddCommand(cmd)
-	}
+    for _, cmdConfig := range config.Commands {
+        logrus.Debugf("Generating command: %s", cmdConfig.ID)
+        cmd := createCommand(cmdConfig)
+        rootCmd.AddCommand(cmd)
+    }
 }
 
 // createCommand creates a new Cobra command from the command configuration
 func createCommand(cmdConfig config.Command) *cobra.Command {
-	return &cobra.Command{
-		Use:   cmdConfig.ID,
-		Short: cmdConfig.Description,
-		Run: func(cmd *cobra.Command, args []string) {
-			variables := make(map[string]string)
-			for _, action := range cmdConfig.Actions {
-				if err := executeAction(action, variables); err != nil {
-					handleActionError(action, err)
-					if action.OnError == "stop" {
-						break
-					}
-				}
-			}
-		},
-	}
+    return &cobra.Command{
+        Use:   cmdConfig.ID,
+        Short: cmdConfig.Description,
+        Run: func(cmd *cobra.Command, args []string) {
+            variables := make(map[string]string)
+            for _, action := range cmdConfig.Actions {
+                if err := executeAction(action, variables); err != nil {
+                    handleActionError(action, err)
+                    if action.OnError == "stop" {
+                        break
+                    }
+                }
+            }
+        },
+    }
 }
 
 // executeAction executes a single action
 func executeAction(action config.Action, variables map[string]string) error {
-	switch action.Type {
-	case "print":
-		return executePrintAction(action, variables)
-	case "set_variable":
-		return executeSetVariableAction(action, variables)
-	case "make_http_request":
-		return executeHTTPRequestAction(action, variables)
-	case "condition":
-		return executeConditionalAction(action, variables)
-	case "loop":
-		return executeLoopAction(action, variables)
-	default:
-		return fmt.Errorf("unknown action type: %s", action.Type)
-	}
+    switch action.Type {
+    case "print":
+        return executePrintAction(action, variables)
+    case "set_variable":
+        return executeSetVariableAction(action, variables)
+    case "make_http_request":
+        return executeHTTPRequestAction(action, variables)
+    case "condition":
+        return executeConditionalAction(action, variables)
+    case "loop":
+        return executeLoopAction(action, variables)
+    default:
+        return fmt.Errorf("unknown action type: %s", action.Type)
+    }
 }
 
 // executePrintAction handles the print action
 func executePrintAction(action config.Action, variables map[string]string) error {
-	msg := replacePlaceholders(action.Message, variables)
-	fmt.Println(msg)
-	return nil
+    msg := replacePlaceholders(action.Message, variables)
+    fmt.Println(msg)
+    return nil
 }
 
 // executeSetVariableAction handles the set_variable action
 func executeSetVariableAction(action config.Action, variables map[string]string) error {
-	variables[action.VariableName] = action.Value
-	logrus.Infof("Set variable %s to %s", action.VariableName, action.Value)
-	return nil
+    variables[action.VariableName] = action.Value
+    logrus.Infof("Set variable %s to %s", action.VariableName, action.Value)
+    return nil
 }
 
 // executeHTTPRequestAction performs an HTTP request based on the action configuration
 func executeHTTPRequestAction(action config.Action, variables map[string]string) error {
-	method, url, reqBody, err := prepareHTTPRequest(action, variables)
-	if err != nil {
-		return err
-	}
+    method, url, reqBody, err := prepareHTTPRequest(action, variables)
+    if err != nil {
+        return err
+    }
 
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(reqBody))
-	if err != nil {
-		return fmt.Errorf("failed to create HTTP request: %v", err)
-	}
+    req, err := http.NewRequest(method, url, bytes.NewBuffer(reqBody))
+    if err != nil {
+        return fmt.Errorf("failed to create HTTP request: %v", err)
+    }
 
-	setRequestHeaders(req, action.Headers)
-	resp, err := performHTTPRequest(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+    setRequestHeaders(req, action.Headers)
+    resp, err := performHTTPRequest(req)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
 
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read HTTP response body: %v", err)
-	}
+    respBody, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        return fmt.Errorf("failed to read HTTP response body: %v", err)
+    }
 
-	logrus.Infof("HTTP response status: %s", resp.Status)
-	logrus.Infof("HTTP response body: %s", string(respBody))
+    logrus.Infof("HTTP response status: %s", resp.Status)
+    logrus.Infof("HTTP response body: %s", string(respBody))
 
-	if action.ResponseVar != "" {
-		variables[action.ResponseVar] = string(respBody)
-		logrus.Infof("Stored HTTP response in variable: %s", action.ResponseVar)
-	}
+    if action.ResponseVar != "" {
+        variables[action.ResponseVar] = string(respBody)
+        logrus.Infof("Stored HTTP response in variable: %s", action.ResponseVar)
+    }
 
-	return nil
+    return nil
 }
 
 // executeConditionalAction evaluates the condition and executes trueActions or falseActions
 func executeConditionalAction(action config.Action, variables map[string]string) error {
-	condition := replacePlaceholders(action.Condition, variables)
-	if evalCondition(condition) {
-		for _, trueAction := range action.TrueActions {
-			if err := executeAction(trueAction, variables); err != nil {
-				return err
-			}
-		}
-	} else {
-		for _, falseAction := range action.FalseActions {
-			if err := executeAction(falseAction, variables); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
+    condition := replacePlaceholders(action.Condition, variables)
+    if evalCondition(condition) {
+        for _, trueAction := range action.TrueActions {
+            if err := executeAction(trueAction, variables); err != nil {
+                return err
+            }
+        }
+    } else {
+        for _, falseAction := range action.FalseActions {
+            if err := executeAction(falseAction, variables); err != nil {
+                return err
+            }
+        }
+    }
+    return nil
 }
 
 // executeLoopAction handles the loop action
 func executeLoopAction(action config.Action, variables map[string]string) error {
-	for i := 0; i < action.LoopCount; i++ {
-		for _, loopAction := range action.LoopActions {
-			if err := executeAction(loopAction, variables); err != nil {
-				handleActionError(loopAction, err)
-				if loopAction.OnError == "stop" {
-					return err
-				}
-			}
-		}
-	}
-	return nil
+    for i := 0; i < action.LoopCount; i++ {
+        for _, loopAction := range action.LoopActions {
+            if err := executeAction(loopAction, variables); err != nil {
+                handleActionError(loopAction, err)
+                if loopAction.OnError == "stop" {
+                    return err
+                }
+            }
+        }
+    }
+    return nil
 }
 
 // prepareHTTPRequest prepares the HTTP request parameters
 func prepareHTTPRequest(action config.Action, variables map[string]string) (string, string, []byte, error) {
-	method := strings.ToUpper(action.Method)
-	url := replacePlaceholders(action.URL, variables)
-	var reqBody []byte
-	if action.Body != "" {
-		body := replacePlaceholders(action.Body, variables)
-		reqBody = []byte(body)
-	}
-	return method, url, reqBody, nil
+    method := strings.ToUpper(action.Method)
+    url := replacePlaceholders(action.URL, variables)
+    var reqBody []byte
+    if action.Body != "" {
+        body := replacePlaceholders(action.Body, variables)
+        reqBody = []byte(body)
+    }
+    return method, url, reqBody, nil
 }
 
 // setRequestHeaders sets the headers for the HTTP request
 func setRequestHeaders(req *http.Request, headers map[string]string) {
-	for key, value := range headers {
-		req.Header.Set(key, value)
-	}
+    for key, value := range headers {
+        req.Header.Set(key, value)
+    }
 }
 
 // performHTTPRequest executes the HTTP request
 func performHTTPRequest(req *http.Request) (*http.Response, error) {
-	client := &http.Client{}
-	return client.Do(req)
+    client := &http.Client{}
+    return client.Do(req)
 }
 
 // replacePlaceholders replaces placeholders in a string with variable values
 func replacePlaceholders(input string, variables map[string]string) string {
-	for key, value := range variables {
-		placeholder := fmt.Sprintf("{{.%s}}", key)
-		input = strings.ReplaceAll(input, placeholder, value)
-	}
-	return input
+    for key, value := range variables {
+        placeholder := fmt.Sprintf("{{.%s}}", key)
+        input = strings.ReplaceAll(input, placeholder, value)
+    }
+    // Replace environment variable placeholders
+    input = replaceEnvPlaceholders(input)
+    return input
+}
+
+// replaceEnvPlaceholders replaces placeholders in the format {{.Env.VAR_NAME}} with environment variable values
+func replaceEnvPlaceholders(input string) string {
+    startIdx := strings.Index(input, "{{.Env.")
+    for startIdx != -1 {
+        endIdx := strings.Index(input[startIdx:], "}}")
+        if endIdx == -1 {
+            break
+        }
+        endIdx += startIdx + 2
+        placeholder := input[startIdx:endIdx]
+        envVarName := strings.TrimPrefix(strings.TrimSuffix(placeholder, "}}"), "{{.Env.")
+        envVarValue := os.Getenv(envVarName)
+        input = strings.ReplaceAll(input, placeholder, envVarValue)
+        startIdx = strings.Index(input, "{{.Env.")
+    }
+    return input
 }
 
 // evalCondition evaluates a condition string and returns true or false
 func evalCondition(condition string) bool {
-	// For simplicity, we assume the condition is a boolean value in string form
-	return strings.ToLower(condition) == "true"
+    // For simplicity, we assume the condition is a boolean value in string form
+    return strings.ToLower(condition) == "true"
 }
 
 // handleActionError handles errors based on the action's onError field
 func handleActionError(action config.Action, err error) {
-	switch action.OnError {
-	case "log":
-		logrus.Errorf("Error executing action %s: %v", action.Type, err)
-	case "stop":
-		logrus.Errorf("Error executing action %s: %v. Stopping execution.", action.Type, err)
-	default:
-		logrus.Errorf("Error executing action %s: %v", action.Type, err)
-	}
+    switch action.OnError {
+    case "log":
+        logrus.Errorf("Error executing action %s: %v", action.Type, err)
+    case "stop":
+        logrus.Errorf("Error executing action %s: %v. Stopping execution.", action.Type, err)
+    default:
+        logrus.Errorf("Error executing action %s: %v", action.Type, err)
+    }
 }
