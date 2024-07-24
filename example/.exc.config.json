@@ -34,13 +34,18 @@
         },
         {
             "id": "http_request",
-            "description": "Make an HTTP GET request",
+            "description": "Make an HTTP GET request and store the response",
             "actions": [
                 {
                     "type": "make_http_request",
                     "url": "https://hackhour.hackclub.com/ping",
                     "method": "GET",
+                    "response_var": "httpResponse",
                     "onError": "log"
+                },
+                {
+                    "type": "print",
+                    "message": "HTTP Response: {{.httpResponse}}"
                 }
             ]
         }

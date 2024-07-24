@@ -108,6 +108,13 @@ func executeHTTPRequest(action config.Action, variables map[string]string) error
 
 	logrus.Infof("HTTP response status: %s", resp.Status)
 	logrus.Infof("HTTP response body: %s", string(respBody))
+
+	// Store response in variables if ResponseVar is set
+	if action.ResponseVar != "" {
+		variables[action.ResponseVar] = string(respBody)
+		logrus.Infof("Stored HTTP response in variable: %s", action.ResponseVar)
+	}
+
 	return nil
 }
 

@@ -23,5 +23,6 @@ type Action struct {
 	Method       string            `json:"method,omitempty"`
 	Headers      map[string]string `json:"headers,omitempty"`
 	Body         string            `json:"body,omitempty"`
+	ResponseVar  string            `json:"response_var,omitempty"`
 	OnError      string            `json:"onError,omitempty"`
 }
