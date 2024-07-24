@@ -29,4 +29,6 @@ type Action struct {
 	TrueActions  []Action          `json:"trueActions,omitempty"`
 	FalseActions []Action          `json:"falseActions,omitempty"`
 	OnError      string            `json:"onError,omitempty"`
+	LoopCount    int               `json:"loop_count,omitempty"`
+	LoopActions  []Action          `json:"loop_actions,omitempty"`
 }

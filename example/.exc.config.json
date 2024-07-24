@@ -1,43 +1,18 @@
 {
     "commands": [
         {
-            "id": "conditional_test",
-            "description": "Test conditional actions",
+            "id": "loop_test",
+            "description": "Test loop actions",
             "actions": [
                 {
-                    "type": "set_variable",
-                    "variable_name": "is_valid",
-                    "value": "true"
-                },
-                {
-                    "type": "condition",
-                    "condition": "{{.is_valid}}",
-                    "trueActions": [
+                    "type": "loop",
+                    "loop_count": 3,
+                    "loop_actions": [
                         {
                             "type": "print",
-                            "message": "Condition is true"
-                        },
-                        {
-                            "type": "set_variable",
-                            "variable_name": "result",
-                            "value": "valid"
-                        }
-                    ],
-                    "falseActions": [
-                        {
-                            "type": "print",
-                            "message": "Condition is false"
-                        },
-                        {
-                            "type": "set_variable",
-                            "variable_name": "result",
-                            "value": "invalid"
+                            "message": "Loop iteration"
                         }
                     ]
-                },
-                {
-                    "type": "print",
-                    "message": "Result is: {{.result}}"
                 }
             ]
         }

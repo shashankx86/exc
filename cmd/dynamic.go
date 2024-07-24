@@ -52,6 +52,8 @@ func executeAction(action config.Action, variables map[string]string) error {
 		return executeHTTPRequestAction(action, variables)
 	case "condition":
 		return executeConditionalAction(action, variables)
+	case "loop":
+		return executeLoopAction(action, variables)
 	default:
 		return fmt.Errorf("unknown action type: %s", action.Type)
 	}
@@ -119,6 +121,21 @@ func executeConditionalAction(action config.Action, variables map[string]string)
 		for _, falseAction := range action.FalseActions {
 			if err := executeAction(falseAction, variables); err != nil {
 				return err
+			}
+		}
+	}
+	return nil
+}
+
+// executeLoopAction handles the loop action
+func executeLoopAction(action config.Action, variables map[string]string) error {
+	for i := 0; i < action.LoopCount; i++ {
+		for _, loopAction := range action.LoopActions {
+			if err := executeAction(loopAction, variables); err != nil {
+				handleActionError(loopAction, err)
+				if loopAction.OnError == "stop" {
+					return err
+				}
 			}
 		}
 	}

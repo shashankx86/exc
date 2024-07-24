@@ -1,0 +1,45 @@
+{
+    "commands": [
+        {
+            "id": "conditional_test",
+            "description": "Test conditional actions",
+            "actions": [
+                {
+                    "type": "set_variable",
+                    "variable_name": "is_valid",
+                    "value": "true"
+                },
+                {
+                    "type": "condition",
+                    "condition": "{{.is_valid}}",
+                    "trueActions": [
+                        {
+                            "type": "print",
+                            "message": "Condition is true"
+                        },
+                        {
+                            "type": "set_variable",
+                            "variable_name": "result",
+                            "value": "valid"
+                        }
+                    ],
+                    "falseActions": [
+                        {
+                            "type": "print",
+                            "message": "Condition is false"
+                        },
+                        {
+                            "type": "set_variable",
+                            "variable_name": "result",
+                            "value": "invalid"
+                        }
+                    ]
+                },
+                {
+                    "type": "print",
+                    "message": "Result is: {{.result}}"
+                }
+            ]
+        }
+    ]
+}
