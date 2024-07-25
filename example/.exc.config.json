@@ -69,6 +69,19 @@
                     ]
                 }
             ]
+        },
+        {
+            "id": "custom",
+            "description": "This is a custom command using a plugin",
+            "actions": [
+              {
+                "type": "example",
+                "message": "This is a custom action executed by the example plugin",
+                "variables": {
+                  "exampleVar": "exampleValue"
+                }
+              }
+            ]
         }
         
     ]

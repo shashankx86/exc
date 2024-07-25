@@ -10,9 +10,15 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"exc/config"
+	"exc/internal/plugin"
 )
 
 func ExecuteAction(action config.Action, variables map[string]string) error {
+	// Check if a custom plugin can handle this action
+	if p, err := plugin.GetPlugin(action.Type); err == nil {
+		return p.Execute(action, variables)
+	}
+
 	switch action.Type {
 	case "print":
 		return executePrintAction(action, variables)
@@ -161,11 +167,19 @@ func EvalCondition(condition string) bool {
 
 func HandleActionError(action config.Action, err error) {
 	switch action.OnError {
-	case "log":
-		logrus.Errorf("Error executing action %s: %v", action.Type, err)
 	case "stop":
-		logrus.Errorf("Error executing action %s: %v. Stopping execution.", action.Type, err)
+		logrus.Errorf("Error executing action: %v", err)
+	case "retry":
+		logrus.Warnf("Retrying action due to error: %v", err)
+		for i := 0; i < action.Retry.Count; i++ {
+			logrus.Infof("Retry attempt %d", i+1)
+			err = ExecuteAction(action, nil)
+			if err == nil {
+				return
+			}
+			logrus.Warnf("Retry %d failed: %v", i+1, err)
+		}
 	default:
-		logrus.Errorf("Error executing action %s: %v", action.Type, err)
+		logrus.Errorf("Unhandled error executing action: %v", err)
 	}
 }

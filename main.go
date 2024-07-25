@@ -6,6 +6,7 @@ import (
 
 	"exc/cmd"
 	"exc/internal/utility"
+	_ "exc/example"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
