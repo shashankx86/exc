@@ -138,6 +138,10 @@ const Schema = `
                 "properties": {
                     "id": { "type": "string" },
                     "description": { "type": "string" },
+                    "aliases": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                    },
                     "actions": {
                         "type": "array",
                         "items": {

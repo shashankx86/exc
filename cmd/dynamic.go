@@ -1,10 +1,11 @@
 package cmd
 
 import (
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"exc/config"
 	"exc/internal/utility"
+
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 func GenerateDynamicCommands(rootCmd *cobra.Command, config *config.CommandConfig) {
@@ -17,8 +18,9 @@ func GenerateDynamicCommands(rootCmd *cobra.Command, config *config.CommandConfi
 
 func createCommand(cmdConfig config.Command) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   cmdConfig.ID,
-		Short: cmdConfig.Description,
+		Use:     cmdConfig.ID,
+		Aliases: cmdConfig.Aliases,
+		Short:   cmdConfig.Description,
 		Run: func(cmd *cobra.Command, args []string) {
 			variables := make(map[string]string)
 			for _, action := range cmdConfig.Actions {
