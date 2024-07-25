@@ -6,7 +6,6 @@ import (
 
 	"exc/cmd"
 	"exc/internal/utility"
-	_ "exc/example"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -42,31 +41,13 @@ func main() {
 		}
 	}
 
-	// Determine the config path based on the dev flag
-	var configPath string
-	if dev == "1" {
-		// Dev mode: check local config path first, then home directory
-		configPath = "example/.exc.config.json"
-		if _, err := os.Stat(configPath); os.IsNotExist(err) {
-			homeDir, err := os.UserHomeDir()
-			if err != nil {
-				logrus.Fatalf("Failed to get home directory: %v", err)
-			}
-			configPath = filepath.Join(homeDir, ".exc.config.json")
-		}
-	} else {
-		// Release mode: use home directory config path
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			logrus.Fatalf("Failed to get home directory: %v", err)
-		}
-		configPath = filepath.Join(homeDir, ".exc.config.json")
-	}
+	// Determine the config path based on the dev flag and active profile
+	profilePath := utility.GetActiveProfilePath(dev)
 
-	logrus.Debugf("Using config path: %s", configPath)
+	logrus.Debugf("Using config path: %s", profilePath)
 
 	// Load configuration
-	config, err := utility.LoadConfig(configPath)
+	config, err := utility.LoadConfig(profilePath)
 	if err != nil {
 		logrus.Fatalf("Failed to load configuration: %v", err)
 	}
@@ -76,6 +57,9 @@ func main() {
 
 	// Add version command
 	rootCmd.AddCommand(cmd.NewVersionCommand())
+
+	// Add profile management commands
+	rootCmd.AddCommand(cmd.NewProfileCommand())
 
 	// Execute the root command
 	if err := rootCmd.Execute(); err != nil {

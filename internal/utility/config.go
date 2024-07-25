@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"exc/config"
 
@@ -12,9 +13,14 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
+const (
+	profileDir     = ".exc/profiles"
+	activeProfile  = ".exc/active_profile"
+	defaultProfile = "default"
+)
+
 // LoadConfig reads and parses the JSON configuration file and validates it against the schema
 func LoadConfig(filePath string) (*config.CommandConfig, error) {
-	// Read the config file
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -26,12 +32,10 @@ func LoadConfig(filePath string) (*config.CommandConfig, error) {
 		return nil, err
 	}
 
-	// Validate the configuration against the schema
 	if err := ValidateConfig(data); err != nil {
 		return nil, err
 	}
 
-	// Unmarshal the JSON data into CommandConfig struct
 	var cfg config.CommandConfig
 	err = json.Unmarshal(data, &cfg)
 	if err != nil {
@@ -59,6 +63,66 @@ func ValidateConfig(configData []byte) error {
 	}
 
 	return nil
+}
+
+func GetActiveProfilePath(dev string) string {
+	if dev == "1" {
+		return "example/.exc.config.json"
+	}
+	activeProfilePath := filepath.Join(profileDir, getActiveProfile())
+	return activeProfilePath
+}
+
+func getActiveProfile() string {
+	data, err := ioutil.ReadFile(activeProfile)
+	if err != nil {
+		return defaultProfile
+	}
+	return string(data)
+}
+
+func ListProfiles() ([]string, error) {
+	files, err := ioutil.ReadDir(profileDir)
+	if err != nil {
+		return nil, err
+	}
+	profiles := make([]string, 0, len(files))
+	for _, file := range files {
+		profiles = append(profiles, file.Name())
+	}
+	return profiles, nil
+}
+
+func AddProfile(name, configPath string) error {
+	profilePath := filepath.Join(profileDir, name)
+	if _, err := os.Stat(profilePath); err == nil {
+		return fmt.Errorf("profile %s already exists", name)
+	}
+	return copyFile(configPath, profilePath)
+}
+
+func SwitchProfile(name string) error {
+	profilePath := filepath.Join(profileDir, name)
+	if _, err := os.Stat(profilePath); os.IsNotExist(err) {
+		return fmt.Errorf("profile %s does not exist", name)
+	}
+	return ioutil.WriteFile(activeProfile, []byte(name), 0644)
+}
+
+func DeleteProfile(name string) error {
+	profilePath := filepath.Join(profileDir, name)
+	if _, err := os.Stat(profilePath); os.IsNotExist(err) {
+		return fmt.Errorf("profile %s does not exist", name)
+	}
+	return os.Remove(profilePath)
+}
+
+func copyFile(src, dst string) error {
+	data, err := ioutil.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(dst, data, 0644)
 }
 
 // Schema represents the JSON schema for validating the configuration
@@ -120,3 +184,9 @@ const Schema = `
     "required": ["commands"]
 }
 `
+
+func init() {
+	if err := os.MkdirAll(profileDir, 0755); err != nil {
+		logrus.Fatalf("Failed to create profile directory: %v", err)
+	}
+}
